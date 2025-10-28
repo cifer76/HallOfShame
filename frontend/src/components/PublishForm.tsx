@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Upload, Send, Image as ImageIcon } from 'lucide-react';
+import { X, Upload, Send } from 'lucide-react';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { uploadToWalrus, imageToBase64 } from '../utils/walrus';
 import { createPublishTransaction } from '../utils/suiClient';
@@ -67,7 +67,7 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
 
       signAndExecute(
         {
-          transaction: tx,
+          transaction: tx as any,
         },
         {
           onSuccess: () => {

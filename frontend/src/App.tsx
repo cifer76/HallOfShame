@@ -6,7 +6,7 @@ import { PublishForm } from './components/PublishForm';
 import { Revelation } from './types';
 import { fetchRevelations } from './utils/suiClient';
 import { SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
-import { getNetworkConfig, suiClient } from './utils/suiClient';
+import { getNetworkConfig } from './utils/suiClient';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@mysten/dapp-kit/dist/index.css';
 
@@ -171,9 +171,10 @@ function HallOfShameApp() {
 }
 
 export default function App() {
+  const config = getNetworkConfig();
   return (
     <QueryClientProvider client={queryClient}>
-      <SuiClientProvider networks={{ testnet: { url: suiClient.transport.url } }} defaultNetwork="testnet">
+      <SuiClientProvider networks={{ testnet: { url: config.rpcUrl } }} defaultNetwork="testnet">
         <WalletProvider autoConnect>
           <HallOfShameApp />
         </WalletProvider>

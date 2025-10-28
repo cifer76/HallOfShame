@@ -45,7 +45,7 @@ export function RevelationCard({ revelation, onUpvoteSuccess }: RevelationCardPr
 
       signAndExecute(
         {
-          transaction: tx,
+          transaction: tx as any,
         },
         {
           onSuccess: () => {

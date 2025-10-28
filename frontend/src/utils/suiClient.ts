@@ -15,7 +15,7 @@ export const suiClient = new SuiClient({ url: SUI_RPC_URL });
 export function createPublishTransaction(
   blobId: string,
   paymentAmount: bigint,
-  walletAddress: string
+  _walletAddress: string
 ): Transaction {
   const tx = new Transaction();
   
