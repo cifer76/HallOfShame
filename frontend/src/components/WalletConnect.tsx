@@ -1,10 +1,12 @@
-import { useCurrentAccount, useDisconnectWallet, useSuiClient } from '@mysten/dapp-kit';
+import { useCurrentAccount, useDisconnectWallet, useSuiClient, useConnectWallet, useWallets } from '@mysten/dapp-kit';
 import { Wallet, LogOut } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export function WalletConnect() {
   const account = useCurrentAccount();
   const { mutate: disconnect } = useDisconnectWallet();
+  const { mutate: connect } = useConnectWallet();
+  const wallets = useWallets();
   const suiClient = useSuiClient();
   const [balance, setBalance] = useState<string>('0');
 
@@ -18,6 +20,14 @@ export function WalletConnect() {
         .catch(console.error);
     }
   }, [account, suiClient]);
+
+  const handleConnect = () => {
+    // Use the first available wallet if any
+    const wallet = wallets[0];
+    if (wallet) {
+      connect({ wallet });
+    }
+  };
 
   if (account) {
     return (
@@ -39,7 +49,15 @@ export function WalletConnect() {
     );
   }
 
-  return null;
+  return (
+    <button
+      onClick={handleConnect}
+      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors shadow-md"
+    >
+      <Wallet className="w-5 h-5" />
+      Connect Wallet
+    </button>
+  );
 }
 
 export function WalletStatus() {
