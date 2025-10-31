@@ -95,7 +95,6 @@ VITE_PACKAGE_ID=0x... # Your deployed package ID
 VITE_HALL_OF_SHAME_ID=0x... # HallOfShame shared object ID
 ```
 
-
 ### 3. Run the Application
 
 ```bash
