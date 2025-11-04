@@ -1,12 +1,12 @@
-import { RevelationContent, WalrusUploadResponse } from '../types';
+import { ShameContent, WalrusUploadResponse } from '../types';
 
 const WALRUS_PUBLISHER_URL = import.meta.env.VITE_WALRUS_PUBLISHER_URL || 'https://publisher.walrus-testnet.walrus.space';
 const WALRUS_AGGREGATOR_URL = import.meta.env.VITE_WALRUS_AGGREGATOR_URL || 'https://aggregator.walrus-testnet.walrus.space';
 
 /**
- * Upload revelation content to Walrus
+ * Upload shame content to Walrus
  */
-export async function uploadToWalrus(content: RevelationContent): Promise<string> {
+export async function uploadToWalrus(content: ShameContent): Promise<string> {
   try {
     const jsonData = JSON.stringify(content);
     const blob = new Blob([jsonData], { type: 'application/json' });
@@ -37,9 +37,9 @@ export async function uploadToWalrus(content: RevelationContent): Promise<string
 }
 
 /**
- * Fetch revelation content from Walrus
+ * Fetch shame content from Walrus
  */
-export async function fetchFromWalrus(blobId: string): Promise<RevelationContent> {
+export async function fetchFromWalrus(blobId: string): Promise<ShameContent> {
   try {
     const response = await fetch(`${WALRUS_AGGREGATOR_URL}/v1/${blobId}`);
 
@@ -47,7 +47,7 @@ export async function fetchFromWalrus(blobId: string): Promise<RevelationContent
       throw new Error(`Walrus fetch failed: ${response.statusText}`);
     }
 
-    const content: RevelationContent = await response.json();
+    const content: ShameContent = await response.json();
     return content;
   } catch (error) {
     console.error('Error fetching from Walrus:', error);

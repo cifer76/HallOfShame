@@ -3,7 +3,7 @@ import { X, Upload, Send } from 'lucide-react';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { uploadToWalrus, imageToBase64 } from '../utils/walrus';
 import { createPublishTransaction } from '../utils/suiClient';
-import { RevelationContent } from '../types';
+import { ShameContent } from '../types';
 
 interface PublishFormProps {
   onClose: () => void;
@@ -51,14 +51,14 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
       setUploadProgress('Uploading to Walrus...');
 
       // Prepare content
-      const revelationContent: RevelationContent = {
+      const shameContent: ShameContent = {
         title: title.trim(),
         content: content.trim(),
         images: images.length > 0 ? images : undefined,
       };
 
       // Upload to Walrus
-      const blobId = await uploadToWalrus(revelationContent);
+      const blobId = await uploadToWalrus(shameContent);
       
       setUploadProgress('Creating transaction...');
 
@@ -72,19 +72,19 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
         {
           onSuccess: () => {
             setUploadProgress('');
-            alert('Revelation published successfully!');
+            alert('Shame published successfully!');
             onPublishSuccess?.();
             onClose();
           },
           onError: (error) => {
             console.error('Transaction failed:', error);
-            alert('Failed to publish revelation: ' + error.message);
+            alert('Failed to publish shame: ' + error.message);
             setUploadProgress('');
           },
         }
       );
     } catch (error) {
-      console.error('Error publishing revelation:', error);
+      console.error('Error publishing shame:', error);
       alert('Failed to publish: ' + (error as Error).message);
       setUploadProgress('');
     } finally {
@@ -96,7 +96,7 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-900">Publish Revelation</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Publish Shame</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -114,8 +114,8 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter revelation title..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Enter shame title..."
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               maxLength={200}
               disabled={publishing}
             />
@@ -128,9 +128,9 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Share your revelation..."
+              placeholder="Share your shame..."
               rows={8}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent resize-none"
               disabled={publishing}
             />
           </div>
@@ -141,7 +141,7 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
             </label>
             
             {images.length < 4 && (
-              <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 cursor-pointer transition-colors">
+              <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-600 cursor-pointer transition-colors">
                 <Upload className="w-5 h-5 text-gray-500" />
                 <span className="text-sm text-gray-600">Upload Images</span>
                 <input
@@ -178,15 +178,15 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
           </div>
 
           {uploadProgress && (
-            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="animate-spin rounded-full h-4 w-4 border-2 border-blue-600 border-t-transparent"></div>
-              <span className="text-sm text-blue-700">{uploadProgress}</span>
+            <div className="flex items-center gap-2 p-3 bg-gray-50 border border-gray-300 rounded-lg">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-700 border-t-transparent"></div>
+              <span className="text-sm text-gray-700">{uploadProgress}</span>
             </div>
           )}
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              <strong>Cost:</strong> 1 SUI to publish this revelation
+          <div className="bg-gray-50 border border-gray-300 rounded-lg p-4">
+            <p className="text-sm text-gray-700">
+              <strong>Cost:</strong> 1 SUI to publish this shame (coins will be burnt)
             </p>
           </div>
         </div>
@@ -204,12 +204,12 @@ export function PublishForm({ onClose, onPublishSuccess }: PublishFormProps) {
             disabled={!account || !title.trim() || !content.trim() || publishing}
             className={`flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-colors ${
               account && title.trim() && content.trim() && !publishing
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                ? 'bg-gray-900 hover:bg-gray-800 text-white'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
             <Send className="w-4 h-4" />
-            {publishing ? 'Publishing...' : 'Publish (1 SUI)'}
+            {publishing ? 'Publishing...' : 'Publish'}
           </button>
         </div>
       </div>

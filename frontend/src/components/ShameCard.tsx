@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { ArrowUp, Calendar, Coins, User } from 'lucide-react';
-import { Revelation, RevelationContent } from '../types';
+import { Shame, ShameContent } from '../types';
 import { fetchFromWalrus } from '../utils/walrus';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 import { createUpvoteTransaction } from '../utils/suiClient';
 
-interface RevelationCardProps {
-  revelation: Revelation;
+interface ShameCardProps {
+  shame: Shame;
   onUpvoteSuccess?: () => void;
 }
 
 const MIN_UPVOTE_AMOUNT = 100_000_000n; // 0.1 SUI
 
-export function RevelationCard({ revelation, onUpvoteSuccess }: RevelationCardProps) {
-  const [content, setContent] = useState<RevelationContent | null>(null);
+export function ShameCard({ shame, onUpvoteSuccess }: ShameCardProps) {
+  const [content, setContent] = useState<ShameContent | null>(null);
   const [loading, setLoading] = useState(true);
   const [upvoting, setUpvoting] = useState(false);
   const account = useCurrentAccount();
@@ -21,15 +21,15 @@ export function RevelationCard({ revelation, onUpvoteSuccess }: RevelationCardPr
 
   useEffect(() => {
     loadContent();
-  }, [revelation.blobId]);
+  }, [shame.blobId]);
 
   async function loadContent() {
     try {
       setLoading(true);
-      const data = await fetchFromWalrus(revelation.blobId);
+      const data = await fetchFromWalrus(shame.blobId);
       setContent(data);
     } catch (error) {
-      console.error('Failed to load revelation content:', error);
+      console.error('Failed to load shame content:', error);
       setContent({ title: 'Error Loading Content', content: 'Failed to fetch from Walrus' });
     } finally {
       setLoading(false);
@@ -41,7 +41,7 @@ export function RevelationCard({ revelation, onUpvoteSuccess }: RevelationCardPr
 
     try {
       setUpvoting(true);
-      const tx = createUpvoteTransaction(revelation.id, MIN_UPVOTE_AMOUNT);
+      const tx = createUpvoteTransaction(shame.id, MIN_UPVOTE_AMOUNT);
 
       signAndExecute(
         {
@@ -102,7 +102,7 @@ export function RevelationCard({ revelation, onUpvoteSuccess }: RevelationCardPr
               <img
                 key={idx}
                 src={img}
-                alt={`Revelation image ${idx + 1}`}
+                alt={`Shame image ${idx + 1}`}
                 className="w-full h-48 object-cover rounded-lg"
               />
             ))}
@@ -114,25 +114,25 @@ export function RevelationCard({ revelation, onUpvoteSuccess }: RevelationCardPr
             <div className="flex items-center gap-1">
               <User className="w-4 h-4" />
               <span className="font-mono">
-                {revelation.author.slice(0, 6)}...{revelation.author.slice(-4)}
+                {shame.author.slice(0, 6)}...{shame.author.slice(-4)}
               </span>
             </div>
             <div className="flex items-center gap-1">
               <Calendar className="w-4 h-4" />
-              <span>{formatDate(revelation.timestamp)}</span>
+              <span>{formatDate(shame.timestamp)}</span>
             </div>
           </div>
-          <div className="flex items-center gap-1 text-purple-600 font-semibold">
+          <div className="flex items-center gap-1 text-gray-700 font-semibold">
             <Coins className="w-4 h-4" />
-            <span>{formatSUI(revelation.totalValueLocked)} SUI</span>
+            <span>{formatSUI(shame.totalBurnt)} SUI burnt</span>
           </div>
         </div>
 
         <div className="flex items-center justify-between pt-4 border-t border-gray-200">
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 text-blue-600 font-semibold">
+            <div className="flex items-center gap-1 text-gray-700 font-semibold">
               <ArrowUp className="w-5 h-5" />
-              <span className="text-lg">{revelation.upvoteCount}</span>
+              <span className="text-lg">{shame.upvoteCount}</span>
             </div>
             <span className="text-sm text-gray-500">upvotes</span>
           </div>
@@ -142,12 +142,12 @@ export function RevelationCard({ revelation, onUpvoteSuccess }: RevelationCardPr
             disabled={!account || upvoting}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
               account
-                ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                ? 'bg-gray-800 hover:bg-gray-900 text-white'
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
             <ArrowUp className="w-4 h-4" />
-            {upvoting ? 'Upvoting...' : 'Upvote (0.1 SUI)'}
+            {upvoting ? 'Upvoting...' : 'Upvote (0.1 SUI burnt)'}
           </button>
         </div>
       </div>

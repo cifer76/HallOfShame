@@ -4,7 +4,7 @@ module hall_of_shame::hall_of_shame_tests {
     use sui::coin::{Self, Coin};
     use sui::sui::SUI;
     use sui::clock::{Self, Clock};
-    use hall_of_shame::hall_of_shame::{Self, HallOfShame, Revelation};
+    use hall_of_shame::hall_of_shame::{Self, HallOfShame, Shame};
 
     const ADMIN: address = @0xAD;
     const USER1: address = @0xB1;
@@ -20,10 +20,10 @@ module hall_of_shame::hall_of_shame_tests {
     }
 
     #[test]
-    fun test_publish_revelation() {
+    fun test_publish_shame() {
         let mut scenario = setup_test();
         
-        // User1 publishes a revelation
+        // User1 publishes a shame
         ts::next_tx(&mut scenario, USER1);
         {
             let mut hall = ts::take_shared<HallOfShame>(&scenario);
@@ -31,7 +31,7 @@ module hall_of_shame::hall_of_shame_tests {
             let payment = coin::mint_for_testing<SUI>(1_000_000_000, ts::ctx(&mut scenario));
             let blob_id = b"test_blob_id_12345";
 
-            hall_of_shame::publish_revelation(
+            hall_of_shame::publish_shame(
                 &mut hall,
                 blob_id,
                 payment,
@@ -39,7 +39,7 @@ module hall_of_shame::hall_of_shame_tests {
                 ts::ctx(&mut scenario)
             );
 
-            assert!(hall_of_shame::get_total_revelations(&hall) == 1, 0);
+            assert!(hall_of_shame::get_total_shames(&hall) == 1, 0);
 
             ts::return_shared(hall);
             ts::return_shared(clock);
@@ -49,10 +49,10 @@ module hall_of_shame::hall_of_shame_tests {
     }
 
     #[test]
-    fun test_upvote_revelation() {
+    fun test_upvote_shame() {
         let mut scenario = setup_test();
         
-        // User1 publishes a revelation
+        // User1 publishes a shame
         ts::next_tx(&mut scenario, USER1);
         {
             let mut hall = ts::take_shared<HallOfShame>(&scenario);
@@ -60,7 +60,7 @@ module hall_of_shame::hall_of_shame_tests {
             let payment = coin::mint_for_testing<SUI>(1_000_000_000, ts::ctx(&mut scenario));
             let blob_id = b"test_blob_id_12345";
 
-            hall_of_shame::publish_revelation(
+            hall_of_shame::publish_shame(
                 &mut hall,
                 blob_id,
                 payment,
@@ -72,24 +72,24 @@ module hall_of_shame::hall_of_shame_tests {
             ts::return_shared(clock);
         };
 
-        // User2 upvotes the revelation
+        // User2 upvotes the shame
         ts::next_tx(&mut scenario, USER2);
         {
-            let mut revelation = ts::take_shared<Revelation>(&scenario);
+            let mut shame = ts::take_shared<Shame>(&scenario);
             let payment = coin::mint_for_testing<SUI>(100_000_000, ts::ctx(&mut scenario));
 
-            let initial_count = hall_of_shame::get_upvote_count(&revelation);
+            let initial_count = hall_of_shame::get_upvote_count(&shame);
             
-            hall_of_shame::upvote_revelation(
-                &mut revelation,
+            hall_of_shame::upvote_shame(
+                &mut shame,
                 payment,
                 ts::ctx(&mut scenario)
             );
 
-            assert!(hall_of_shame::get_upvote_count(&revelation) == initial_count + 1, 0);
-            assert!(hall_of_shame::get_total_value_locked(&revelation) == 1_100_000_000, 1);
+            assert!(hall_of_shame::get_upvote_count(&shame) == initial_count + 1, 0);
+            assert!(hall_of_shame::get_total_burnt(&shame) == 1_100_000_000, 1);
 
-            ts::return_shared(revelation);
+            ts::return_shared(shame);
         };
 
         ts::end(scenario);
@@ -107,7 +107,7 @@ module hall_of_shame::hall_of_shame_tests {
             let payment = coin::mint_for_testing<SUI>(100, ts::ctx(&mut scenario)); // Too low
             let blob_id = b"test_blob_id";
 
-            hall_of_shame::publish_revelation(
+            hall_of_shame::publish_shame(
                 &mut hall,
                 blob_id,
                 payment,

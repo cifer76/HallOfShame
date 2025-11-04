@@ -1,6 +1,6 @@
 import { SuiClient, SuiObjectResponse } from '@mysten/sui/client';
 import { Transaction } from '@mysten/sui/transactions';
-import { Revelation } from '../types';
+import { Shame } from '../types';
 
 const SUI_NETWORK = import.meta.env.VITE_SUI_NETWORK || 'testnet';
 const SUI_RPC_URL = import.meta.env.VITE_SUI_RPC_URL || 'https://fullnode.testnet.sui.io:443';
@@ -10,7 +10,7 @@ const HALL_OF_SHAME_ID = import.meta.env.VITE_HALL_OF_SHAME_ID || '';
 export const suiClient = new SuiClient({ url: SUI_RPC_URL });
 
 /**
- * Create transaction to publish a revelation
+ * Create transaction to publish a shame
  */
 export function createPublishTransaction(
   blobId: string,
@@ -24,7 +24,7 @@ export function createPublishTransaction(
   
   // Get clock object
   tx.moveCall({
-    target: `${PACKAGE_ID}::hall_of_shame::publish_revelation`,
+    target: `${PACKAGE_ID}::hall_of_shame::publish_shame`,
     arguments: [
       tx.object(HALL_OF_SHAME_ID),
       tx.pure.string(blobId),
@@ -37,10 +37,10 @@ export function createPublishTransaction(
 }
 
 /**
- * Create transaction to upvote a revelation
+ * Create transaction to upvote a shame
  */
 export function createUpvoteTransaction(
-  revelationId: string,
+  shameId: string,
   paymentAmount: bigint
 ): Transaction {
   const tx = new Transaction();
@@ -49,9 +49,9 @@ export function createUpvoteTransaction(
   const [paymentCoin] = tx.splitCoins(tx.gas, [paymentAmount]);
   
   tx.moveCall({
-    target: `${PACKAGE_ID}::hall_of_shame::upvote_revelation`,
+    target: `${PACKAGE_ID}::hall_of_shame::upvote_shame`,
     arguments: [
-      tx.object(revelationId),
+      tx.object(shameId),
       paymentCoin,
     ],
   });
@@ -60,9 +60,9 @@ export function createUpvoteTransaction(
 }
 
 /**
- * Parse revelation object from Sui response
+ * Parse shame object from Sui response
  */
-export function parseRevelation(obj: SuiObjectResponse): Revelation | null {
+export function parseShame(obj: SuiObjectResponse): Shame | null {
   if (!obj.data?.content || obj.data.content.dataType !== 'moveObject') {
     return null;
   }
@@ -75,16 +75,16 @@ export function parseRevelation(obj: SuiObjectResponse): Revelation | null {
     author: fields.author,
     timestamp: Number(fields.timestamp),
     upvoteCount: Number(fields.upvote_count),
-    totalValueLocked: Number(fields.total_value_locked),
+    totalBurnt: Number(fields.total_burnt),
   };
 }
 
 /**
- * Fetch all revelations
+ * Fetch all shames
  */
-export async function fetchRevelations(): Promise<Revelation[]> {
+export async function fetchShames(): Promise<Shame[]> {
   try {
-    // Query all Revelation objects
+    // Query all Shame objects
     const response = await suiClient.getOwnedObjects({
       owner: HALL_OF_SHAME_ID,
       options: {
@@ -93,34 +93,34 @@ export async function fetchRevelations(): Promise<Revelation[]> {
       },
     });
 
-    const revelations: Revelation[] = [];
+    const shames: Shame[] = [];
     
     for (const obj of response.data) {
-      const revelation = parseRevelation(obj);
-      if (revelation) {
-        revelations.push(revelation);
+      const shame = parseShame(obj);
+      if (shame) {
+        shames.push(shame);
       }
     }
 
     // Sort by upvotes (descending), then by timestamp (newest first)
-    revelations.sort((a, b) => {
+    shames.sort((a, b) => {
       if (b.upvoteCount !== a.upvoteCount) {
         return b.upvoteCount - a.upvoteCount;
       }
       return b.timestamp - a.timestamp;
     });
 
-    return revelations;
+    return shames;
   } catch (error) {
-    console.error('Error fetching revelations:', error);
+    console.error('Error fetching shames:', error);
     return [];
   }
 }
 
 /**
- * Fetch dynamic fields to get revelations from HallOfShame
+ * Fetch dynamic fields to get shames from HallOfShame
  */
-export async function fetchRevelationsFromHall(): Promise<string[]> {
+export async function fetchShamesFromHall(): Promise<string[]> {
   try {
     if (!HALL_OF_SHAME_ID) {
       return [];
@@ -132,7 +132,7 @@ export async function fetchRevelationsFromHall(): Promise<string[]> {
 
     return response.data.map(field => field.objectId);
   } catch (error) {
-    console.error('Error fetching revelation IDs:', error);
+    console.error('Error fetching shame IDs:', error);
     return [];
   }
 }
