@@ -11,7 +11,7 @@ export async function uploadToWalrus(content: ShameContent): Promise<string> {
     const jsonData = JSON.stringify(content);
     const blob = new Blob([jsonData], { type: 'application/json' });
 
-    const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/store`, {
+    const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/blobs`, {
       method: 'PUT',
       body: blob,
     });

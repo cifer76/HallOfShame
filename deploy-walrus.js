@@ -54,7 +54,7 @@ async function deployToWalrus() {
   }
 
   try {
-    const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/store`, {
+    const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/blobs`, {
       method: 'PUT',
       headers,
       body: fileData
