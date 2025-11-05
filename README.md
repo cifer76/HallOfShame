@@ -17,6 +17,7 @@ A decentralized bulletin board built on Sui blockchain and Walrus distributed st
 - 🌐 Decentralized storage via Walrus
 - 📱 Responsive, modern UI
 
+
 ## Project Structure
 
 ```
