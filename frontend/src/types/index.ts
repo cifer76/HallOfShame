@@ -6,24 +6,13 @@ export interface ShameContent {
 
 export interface Shame {
   id: string;
+  title: string;
   blobId: string;
+  blobObjectId: string; // Sui object ID of the blob (needed for extension)
   author: string;
   timestamp: number;
   upvoteCount: number;
-  totalBurnt: number;
   content?: ShameContent; // Loaded from Walrus
-}
-
-export interface WalrusUploadResponse {
-  newlyCreated?: {
-    blobObject: {
-      id: string;
-      blobId: string;
-    };
-  };
-  alreadyCertified?: {
-    blobId: string;
-  };
 }
 
 

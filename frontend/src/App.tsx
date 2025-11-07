@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Plus, RefreshCw, AlertCircle } from 'lucide-react';
-import { WalletConnect, WalletStatus } from './components/WalletConnect';
-import { ShameCard } from './components/ShameCard';
-import { PublishForm } from './components/PublishForm';
+import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { Plus, AlertCircle } from 'lucide-react';
+import { NavBar } from './components/NavBar';
+import { ShameDetail } from './components/ShameDetail';
+import { PublishPage } from './components/PublishPage';
+import { About } from './components/About';
+import { WalletStatus } from './components/WalletConnect';
 import { Shame } from './types';
 import { fetchShames } from './utils/suiClient';
 import { SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
@@ -12,11 +15,11 @@ import '@mysten/dapp-kit/dist/index.css';
 
 const queryClient = new QueryClient();
 
-function HallOfShameApp() {
+function HomePage() {
   const [shames, setShames] = useState<Shame[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showPublishForm, setShowPublishForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
   const config = getNetworkConfig();
 
   useEffect(() => {
@@ -37,135 +40,138 @@ function HallOfShameApp() {
     }
   }
 
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) {
+      return `${diffMins} minutes ago`;
+    } else if (diffHours < 24) {
+      return `${diffHours} hours ago`;
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+      });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-md border-b border-gray-300 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Hall of Shame
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Decentralized Bulletin Board on Walrus & Sui
-              </p>
-            </div>
-            <WalletConnect />
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+    <div className="bg-white min-h-screen">
+      <div className="max-w-4xl mx-auto px-4 py-4">
         <WalletStatus />
-
-        {/* Action Bar */}
-        <div className="flex items-center justify-between mb-6 mt-4">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {shames.length} Shame{shames.length !== 1 ? 's' : ''}
-            </h2>
-            <button
-              onClick={loadShames}
-              disabled={loading}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-              title="Refresh"
-            >
-              <RefreshCw className={`w-5 h-5 text-gray-600 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-          </div>
-
-          <button
-            onClick={() => setShowPublishForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors shadow-md"
-          >
-            <Plus className="w-5 h-5" />
-            Publish Shame
-          </button>
-        </div>
 
         {/* Configuration Notice */}
         {!config.packageId && (
-          <div className="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h3 className="font-semibold text-orange-900 mb-1">Configuration Required</h3>
-              <p className="text-sm text-orange-800">
-                Please deploy the smart contract and update the <code className="bg-orange-100 px-1 rounded">.env</code> file with:
-              </p>
-              <ul className="text-sm text-orange-800 mt-2 space-y-1 list-disc list-inside">
-                <li><code className="bg-orange-100 px-1 rounded">VITE_PACKAGE_ID</code></li>
-                <li><code className="bg-orange-100 px-1 rounded">VITE_HALL_OF_SHAME_ID</code></li>
-              </ul>
+          <div className="mb-4 p-3 bg-orange-50 border border-orange-200">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-orange-600 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-orange-800">
+                <div className="font-semibold mb-1">Configuration Required</div>
+                <div>Please deploy the smart contract and update .env with VITE_PACKAGE_ID and VITE_HALL_OF_SHAME_ID</div>
+              </div>
             </div>
           </div>
         )}
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600" />
-            <p className="text-sm text-red-800">{error}</p>
+          <div className="mb-4 p-3 bg-red-50 border border-red-200">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-red-600" />
+              <span className="text-sm text-red-800">{error}</span>
+            </div>
           </div>
         )}
 
-        {/* Shames Grid */}
+        {/* Action Bar */}
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-red-800">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={loadShames}
+              disabled={loading}
+              className="text-sm text-gray-600 hover:underline"
+              title="Refresh"
+            >
+              {loading ? 'Loading...' : 'Refresh'}
+            </button>
+          </div>
+          <button
+            onClick={() => navigate('/new')}
+            className="text-sm text-gray-600 hover:underline"
+          >
+            <Plus className="w-4 h-4 inline mr-1" />
+            New Shame
+          </button>
+        </div>
+
+        {/* Shames List */}
         {loading && shames.length === 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-lg shadow-md p-6 animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-                <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="space-y-1">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="py-2 border-b border-gray-200">
+                <div className="h-4 bg-gray-200 w-3/4 mb-1"></div>
+                <div className="h-3 bg-gray-200 w-1/2"></div>
               </div>
             ))}
           </div>
         ) : shames.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-200 rounded-full mb-4">
-              <AlertCircle className="w-8 h-8 text-gray-400" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No Shames Yet</h3>
-            <p className="text-gray-600 mb-6">Be the first to publish a shame on the Hall of Shame!</p>
+          <div className="py-8 text-center text-gray-600">
+            <div className="mb-4">No shames yet.</div>
             <button
-              onClick={() => setShowPublishForm(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors shadow-md"
+              onClick={() => navigate('/new')}
+              className="text-sm text-gray-600 hover:underline"
             >
-              <Plus className="w-5 h-5" />
-              Publish First Shame
+              Be the first to submit
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {shames.map(shame => (
-              <ShameCard
+          <div className="space-y-0">
+            {shames.map((shame, index) => (
+              <div
                 key={shame.id}
-                shame={shame}
-                onUpvoteSuccess={loadShames}
-              />
+                className="py-2 border-b border-gray-200 hover:bg-red-50 cursor-pointer"
+                onClick={() => navigate(`/shame/${shame.id}`)}
+              >
+                <div className="flex items-start gap-2">
+                  <span className="text-gray-500 text-sm min-w-[2rem]">{index + 1}.</span>
+                  <div className="flex-1">
+                    <div className="text-sm text-gray-900">
+                      <span>{shame.title || 'Untitled'}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      <span>{shame.upvoteCount} points</span>
+                      <span className="mx-1">|</span>
+                      <span>{formatDate(shame.timestamp)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         )}
-      </main>
+      </div>
+    </div>
+  );
+}
 
-      {/* Publish Form Modal */}
-      {showPublishForm && (
-        <PublishForm
-          onClose={() => setShowPublishForm(false)}
-          onPublishSuccess={loadShames}
-        />
-      )}
-
-      {/* Footer */}
-      <footer className="mt-16 py-8 border-t border-gray-300">
-        <div className="max-w-7xl mx-auto px-4 text-center text-sm text-gray-600">
-          <p>Built on Sui & Walrus</p>
-          <p className="mt-1">
-            Network: <span className="font-mono font-semibold">{config.network}</span>
-          </p>
-        </div>
-      </footer>
+function AppRoutes() {
+  return (
+    <div className="min-h-screen bg-white">
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/shame/:id" element={<ShameDetail />} />
+        <Route path="/new" element={<PublishPage />} />
+        <Route path="/about" element={<About />} />
+      </Routes>
     </div>
   );
 }
@@ -176,11 +182,11 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider networks={{ testnet: { url: config.rpcUrl } }} defaultNetwork="testnet">
         <WalletProvider autoConnect>
-          <HallOfShameApp />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>
   );
 }
-
-

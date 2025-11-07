@@ -1,47 +1,75 @@
-import { ShameContent, WalrusUploadResponse } from '../types';
+import { SuiClient, getFullnodeUrl } from '@mysten/sui/client';
+import { Transaction } from '@mysten/sui/transactions';
+import { walrus, WalrusClient } from '@mysten/walrus';
+import walrusWasmUrl from '@mysten/walrus-wasm/web/walrus_wasm_bg.wasm?url';
 
-const WALRUS_PUBLISHER_URL = import.meta.env.VITE_WALRUS_PUBLISHER_URL || 'https://publisher.walrus-testnet.walrus.space';
-const WALRUS_AGGREGATOR_URL = import.meta.env.VITE_WALRUS_AGGREGATOR_URL || 'https://aggregator.walrus-testnet.walrus.space';
+import { ShameContent } from '../types';
 
-/**
- * Upload shame content to Walrus
- */
-export async function uploadToWalrus(content: ShameContent): Promise<string> {
-  try {
-    const jsonData = JSON.stringify(content);
-    const blob = new Blob([jsonData], { type: 'application/json' });
+const WALRUS_AGGREGATOR_URL =
+  import.meta.env.VITE_WALRUS_AGGREGATOR_URL || 'https://aggregator.walrus-testnet.walrus.space';
+const WALRUS_UPLOAD_RELAY_URL =
+  import.meta.env.VITE_WALRUS_UPLOAD_RELAY_URL || 'https://upload-relay.testnet.walrus.space';
+const WALRUS_UPLOAD_RELAY_ENABLED =
+  (import.meta.env.VITE_WALRUS_UPLOAD_RELAY_ENABLED || 'false').toLowerCase() === 'true';
+const WALRUS_STORAGE_EPOCHS = Number(import.meta.env.VITE_WALRUS_STORAGE_EPOCHS || 5);
 
-    const response = await fetch(`${WALRUS_PUBLISHER_URL}/v1/blobs`, {
-      method: 'PUT',
-      body: blob,
-    });
+const SUI_NETWORK = (import.meta.env.VITE_SUI_NETWORK || 'testnet') as 'testnet' | 'mainnet';
+const SUI_RPC_URL = import.meta.env.VITE_SUI_RPC_URL || getFullnodeUrl(SUI_NETWORK);
 
-    if (!response.ok) {
-      throw new Error(`Walrus upload failed: ${response.statusText}`);
-    }
+type WalrusExtendedClient = SuiClient & { walrus: WalrusClient };
 
-    const result: WalrusUploadResponse = await response.json();
-    
-    // Extract blob ID from response
-    const blobId = result.newlyCreated?.blobObject.blobId || result.alreadyCertified?.blobId;
-    
-    if (!blobId) {
-      throw new Error('No blob ID returned from Walrus');
-    }
+let cachedWalrusClient: WalrusExtendedClient | null = null;
 
-    return blobId;
-  } catch (error) {
-    console.error('Error uploading to Walrus:', error);
-    throw error;
-  }
+function createWalrusClient(): WalrusExtendedClient {
+  const extensionOptions = WALRUS_UPLOAD_RELAY_ENABLED
+    ? {
+        uploadRelay: {
+          host: WALRUS_UPLOAD_RELAY_URL,
+        },
+      }
+    : {};
+
+  return new SuiClient({ url: SUI_RPC_URL, network: SUI_NETWORK }).$extend(
+    walrus({
+      wasmUrl: walrusWasmUrl,
+      ...extensionOptions,
+    }),
+  ) as WalrusExtendedClient;
 }
 
-/**
- * Fetch shame content from Walrus
- */
+export function getWalrusClient(): WalrusExtendedClient {
+  if (!cachedWalrusClient) {
+    cachedWalrusClient = createWalrusClient();
+  }
+
+  return cachedWalrusClient;
+}
+
+export function createWalrusBlobFlow(content: ShameContent) {
+  const walrusClient = getWalrusClient();
+  const encoded = new TextEncoder().encode(JSON.stringify(content));
+  const flow = walrusClient.walrus.writeBlobFlow({ blob: encoded });
+
+  return {
+    walrusClient,
+    flow,
+    encoded,
+    epochs: WALRUS_STORAGE_EPOCHS,
+  };
+}
+
+export async function appendExtendWalrusBlob(
+  tx: Transaction,
+  blobObjectId: string,
+  epochs: number = 1,
+) {
+  const walrusClient = getWalrusClient();
+  await walrusClient.walrus.extendBlob({ blobObjectId, epochs })(tx);
+}
+
 export async function fetchFromWalrus(blobId: string): Promise<ShameContent> {
   try {
-    const response = await fetch(`${WALRUS_AGGREGATOR_URL}/v1/${blobId}`);
+    const response = await fetch(`${WALRUS_AGGREGATOR_URL}/v1/blobs/${blobId}`);
 
     if (!response.ok) {
       throw new Error(`Walrus fetch failed: ${response.statusText}`);

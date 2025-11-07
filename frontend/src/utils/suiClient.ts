@@ -9,50 +9,51 @@ const HALL_OF_SHAME_ID = import.meta.env.VITE_HALL_OF_SHAME_ID || '';
 
 export const suiClient = new SuiClient({ url: SUI_RPC_URL });
 
-/**
- * Create transaction to publish a shame
- */
-export function createPublishTransaction(
+export function appendPublishShame(
+  tx: Transaction,
+  title: string,
   blobId: string,
-  paymentAmount: bigint,
-  _walletAddress: string
-): Transaction {
-  const tx = new Transaction();
-  
-  // Split coin for payment
-  const [paymentCoin] = tx.splitCoins(tx.gas, [paymentAmount]);
-  
-  // Get clock object
+  blobObjectId: string,
+  sender: string,
+) {
+  tx.setSenderIfNotSet(sender);
+
   tx.moveCall({
     target: `${PACKAGE_ID}::hall_of_shame::publish_shame`,
     arguments: [
       tx.object(HALL_OF_SHAME_ID),
+      tx.pure.string(title),
       tx.pure.string(blobId),
-      paymentCoin,
-      tx.object('0x6'), // Clock object
+      tx.pure.string(blobObjectId),
+      tx.object('0x6'),
     ],
   });
 
   return tx;
 }
 
-/**
- * Create transaction to upvote a shame
- */
-export function createUpvoteTransaction(
-  shameId: string,
-  paymentAmount: bigint
+export function createPublishTransaction(
+  title: string,
+  blobId: string,
+  blobObjectId: string,
+  sender: string,
 ): Transaction {
   const tx = new Transaction();
-  
-  // Split coin for payment
-  const [paymentCoin] = tx.splitCoins(tx.gas, [paymentAmount]);
+  return appendPublishShame(tx, title, blobId, blobObjectId, sender);
+}
+
+/**
+ * Create transaction to upvote a shame (no payment required)
+ */
+export function createUpvoteTransaction(
+  shameId: string
+): Transaction {
+  const tx = new Transaction();
   
   tx.moveCall({
     target: `${PACKAGE_ID}::hall_of_shame::upvote_shame`,
     arguments: [
       tx.object(shameId),
-      paymentCoin,
     ],
   });
 
@@ -69,13 +70,26 @@ export function parseShame(obj: SuiObjectResponse): Shame | null {
 
   const fields = obj.data.content.fields as any;
   
+  // Handle title - may not exist for old shames
+  let title = '';
+  if (fields.title) {
+    title = bytesToString(fields.title);
+  } else {
+    // Fallback for old shames without title
+    title = 'Untitled';
+  }
+  
+  const blobId = bytesToString(fields.blob_id);
+  const blobObjectId = fields.blob_object_id ? bytesToString(fields.blob_object_id) : '';
+
   return {
     id: obj.data.objectId,
-    blobId: bytesToString(fields.blob_id),
+    title,
+    blobId,
+    blobObjectId,
     author: fields.author,
     timestamp: Number(fields.timestamp),
     upvoteCount: Number(fields.upvote_count),
-    totalBurnt: Number(fields.total_burnt),
   };
 }
 
@@ -84,9 +98,41 @@ export function parseShame(obj: SuiObjectResponse): Shame | null {
  */
 export async function fetchShames(): Promise<Shame[]> {
   try {
-    // Query all Shame objects
-    const response = await suiClient.getOwnedObjects({
-      owner: HALL_OF_SHAME_ID,
+    if (!PACKAGE_ID) {
+      return [];
+    }
+
+    // Query ShamePublished events to get all shame IDs
+    const events = await suiClient.queryEvents({
+      query: {
+        MoveModule: {
+          package: PACKAGE_ID,
+          module: 'hall_of_shame',
+        },
+      },
+      limit: 1000, // Adjust as needed
+    });
+
+    const shameIds: string[] = [];
+    for (const event of events.data) {
+      if (event.parsedJson && typeof event.parsedJson === 'object' && 'shame_id' in event.parsedJson) {
+        const shameId = (event.parsedJson as any).shame_id;
+        if (shameId && typeof shameId === 'string') {
+          shameIds.push(shameId);
+        }
+      }
+    }
+
+    // Remove duplicates
+    const uniqueShameIds = Array.from(new Set(shameIds));
+
+    if (uniqueShameIds.length === 0) {
+      return [];
+    }
+
+    // Fetch all shame objects
+    const objects = await suiClient.multiGetObjects({
+      ids: uniqueShameIds,
       options: {
         showContent: true,
         showType: true,
@@ -94,8 +140,7 @@ export async function fetchShames(): Promise<Shame[]> {
     });
 
     const shames: Shame[] = [];
-    
-    for (const obj of response.data) {
+    for (const obj of objects) {
       const shame = parseShame(obj);
       if (shame) {
         shames.push(shame);
@@ -114,6 +159,26 @@ export async function fetchShames(): Promise<Shame[]> {
   } catch (error) {
     console.error('Error fetching shames:', error);
     return [];
+  }
+}
+
+/**
+ * Fetch a single shame by ID
+ */
+export async function fetchShameById(shameId: string): Promise<Shame | null> {
+  try {
+    const obj = await suiClient.getObject({
+      id: shameId,
+      options: {
+        showContent: true,
+        showType: true,
+      },
+    });
+
+    return parseShame(obj);
+  } catch (error) {
+    console.error('Error fetching shame by ID:', error);
+    return null;
   }
 }
 
