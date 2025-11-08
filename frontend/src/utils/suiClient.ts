@@ -46,9 +46,11 @@ export function createPublishTransaction(
  * Create transaction to upvote a shame (no payment required)
  */
 export function createUpvoteTransaction(
-  shameId: string
+  shameId: string,
+  sender: string,
 ): Transaction {
   const tx = new Transaction();
+  tx.setSenderIfNotSet(sender);
   
   tx.moveCall({
     target: `${PACKAGE_ID}::hall_of_shame::upvote_shame`,

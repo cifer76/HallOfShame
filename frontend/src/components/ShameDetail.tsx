@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
 import { Shame, ShameContent } from '../types';
 import { fetchShameById, createUpvoteTransaction } from '../utils/suiClient';
-import { appendExtendWalrusBlob, fetchFromWalrus } from '../utils/walrus';
+import { appendExtendWalrusBlob, fetchFromWalrus, getWalrusClient } from '../utils/walrus';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 
 export function ShameDetail() {
@@ -55,11 +55,15 @@ export function ShameDetail() {
     try {
       setUpvoting(true);
 
-      const tx = createUpvoteTransaction(shame.id);
+      const tx = createUpvoteTransaction(shame.id, account.address);
+      //const walrusClient = getWalrusClient();
 
-      if (shame.blobObjectId) {
-        await appendExtendWalrusBlob(tx, shame.blobObjectId, 1);
-      }
+      //tx.setGasBudgetIfNotSet(50_000_000n); // 50M MIST = 0.05 SUI
+      //await appendExtendWalrusBlob(tx, shame.blobObjectId, 1);
+
+      // Prepare transaction with client before walrus extension (needed for coin balance resolution)
+      // The walrus extension resolves coin balances during its call, so client must be available
+      //await tx.prepareForSerialization({ client: walrusClient });
 
       await signAndExecute({ transaction: tx as any });
       await loadShame();
