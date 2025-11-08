@@ -3,7 +3,8 @@ import { useParams } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
 import { Shame, ShameContent } from '../types';
 import { fetchShameById, createUpvoteTransaction } from '../utils/suiClient';
-import { appendExtendWalrusBlob, fetchFromWalrus, getWalrusClient } from '../utils/walrus';
+//import { appendExtendWalrusBlob, fetchFromWalrus, getWalrusClient } from '../utils/walrus';
+import { fetchFromWalrus } from '../utils/walrus';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 
 export function ShameDetail() {
