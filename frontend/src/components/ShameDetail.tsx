@@ -13,6 +13,7 @@ export function ShameDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [upvoting, setUpvoting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const account = useCurrentAccount();
   const { mutateAsync: signAndExecute } = useSignAndExecuteTransaction();
 
@@ -116,13 +117,18 @@ export function ShameDetail() {
         <div className="mb-6 text-gray-700 whitespace-pre-wrap">{content?.content}</div>
 
         {content?.images && content.images.length > 0 && (
-          <div className="mb-6 space-y-4">
+          <div
+            className={`mb-6 grid gap-4 ${
+              content.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
+            }`}
+          >
             {content.images.map((img, idx) => (
               <img
                 key={idx}
                 src={img}
                 alt={`Shame image ${idx + 1}`}
-                className="max-w-full border border-gray-300"
+                className="w-full border border-gray-300 object-cover cursor-pointer"
+                onClick={() => setSelectedImage(img)}
               />
             ))}
           </div>
@@ -143,6 +149,20 @@ export function ShameDetail() {
           </button>
         </div>
       </div>
+      {selectedImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+          role="presentation"
+        >
+          <img
+            src={selectedImage}
+            alt="Shame full view"
+            className="max-h-full max-w-full object-contain"
+            onClick={(event) => event.stopPropagation()}
+          />
+        </div>
+      )}
     </div>
   );
 }
