@@ -194,12 +194,6 @@ export function PublishPage() {
             </div>
           )}
 
-          <div className="bg-gray-50 border border-gray-300 p-3">
-            <p className="text-sm text-gray-700">
-              <strong>Note:</strong> Publishing is free - no payment required
-            </p>
-          </div>
-
           <div className="flex items-center gap-3 pt-4 border-t border-gray-300">
             <button
               onClick={() => navigate('/')}

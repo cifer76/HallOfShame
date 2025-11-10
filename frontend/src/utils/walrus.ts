@@ -11,7 +11,12 @@ const WALRUS_UPLOAD_RELAY_URL =
   import.meta.env.VITE_WALRUS_UPLOAD_RELAY_URL || 'https://upload-relay.testnet.walrus.space';
 const WALRUS_UPLOAD_RELAY_ENABLED =
   (import.meta.env.VITE_WALRUS_UPLOAD_RELAY_ENABLED || 'false').toLowerCase() === 'true';
-const WALRUS_STORAGE_EPOCHS = Number(import.meta.env.VITE_WALRUS_STORAGE_EPOCHS || 5);
+export const WALRUS_MAX_STORAGE_EPOCHS = 53;
+const REQUESTED_STORAGE_EPOCHS = Number(import.meta.env.VITE_WALRUS_STORAGE_EPOCHS);
+export const WALRUS_STORAGE_EPOCHS =
+  Number.isFinite(REQUESTED_STORAGE_EPOCHS) && REQUESTED_STORAGE_EPOCHS > 0
+    ? Math.min(REQUESTED_STORAGE_EPOCHS, WALRUS_MAX_STORAGE_EPOCHS)
+    : WALRUS_MAX_STORAGE_EPOCHS;
 
 const SUI_NETWORK = (import.meta.env.VITE_SUI_NETWORK || 'testnet') as 'testnet' | 'mainnet';
 const SUI_RPC_URL = import.meta.env.VITE_SUI_RPC_URL || getFullnodeUrl(SUI_NETWORK);

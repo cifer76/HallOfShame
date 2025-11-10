@@ -15,7 +15,14 @@ export function About() {
           </p>
           
           <p>
-            Each shame can be upvoted by other users. The platform is free to use - no payment is required to publish or upvote.
+            Publishing a shame requires paying two small costs: WAL to cover storage on Walrus for the content itself, and SUI
+            for the transaction gas on the Sui blockchain. Beyond those, there are no extra platform fees.
+          </p>
+
+          <p>
+            Content is written with Walrus&apos; maximum retention window (53 epochs), so every shame will eventually expire.
+            To keep a post alive past that point you currently need to extend the blob through another Walrus-compatible tool.
+            Support for extending storage directly from this site is on the roadmap.
           </p>
           
           <p>

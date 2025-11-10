@@ -24,7 +24,7 @@ export function appendPublishShame(
       tx.object(HALL_OF_SHAME_ID),
       tx.pure.string(title),
       tx.pure.string(blobId),
-      tx.pure.string(blobObjectId),
+      tx.object(blobObjectId),
       tx.object('0x6'),
     ],
   });
@@ -82,7 +82,12 @@ export function parseShame(obj: SuiObjectResponse): Shame | null {
   }
   
   const blobId = bytesToString(fields.blob_id);
-  const blobObjectId = fields.blob_object_id ? bytesToString(fields.blob_object_id) : '';
+  const blobObjectId =
+    typeof fields.blob_object_id === 'string'
+      ? fields.blob_object_id
+      : fields.blob_object_id
+      ? bytesToString(fields.blob_object_id)
+      : '';
 
   return {
     id: obj.data.objectId,

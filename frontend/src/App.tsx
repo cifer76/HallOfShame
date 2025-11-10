@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, useNavigate } from 'react-router-dom';
 import { Plus, AlertCircle } from 'lucide-react';
 import { NavBar } from './components/NavBar';
 import { ShameDetail } from './components/ShameDetail';
@@ -182,9 +182,9 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider networks={{ testnet: { url: config.rpcUrl } }} defaultNetwork="testnet">
         <WalletProvider autoConnect>
-          <BrowserRouter>
+          <HashRouter>
             <AppRoutes />
-          </BrowserRouter>
+          </HashRouter>
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>
