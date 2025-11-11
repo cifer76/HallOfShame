@@ -145,17 +145,17 @@ export function parseShame(obj: SuiObjectResponse): Shame | null {
   
   const blobId = bytesToString(fields.blob_id);
   const sharedBlobId = typeof fields.shared_blob_id === 'string' ? fields.shared_blob_id : '';
-
-  return {
-    id: obj.data.objectId,
-    title,
-    blobId,
-    sharedBlobId,
-    author: fields.author,
-    timestamp: Number(fields.timestamp),
-    upvoteCount: Number(fields.upvote_count),
-  };
-}
+ 
+   return {
+     id: obj.data.objectId,
+     title,
+     blobId,
+     sharedBlobId,
+     author: fields.author,
+     timestamp: Number(fields.timestamp),
+     upvoteCount: Number(fields.upvote_count),
+   };
+ }
 
 /**
  * Fetch all shames

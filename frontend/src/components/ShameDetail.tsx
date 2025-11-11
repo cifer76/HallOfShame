@@ -124,51 +124,83 @@ export function ShameDetail() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="bg-white p-6 border border-gray-300">
-        <h1 className="text-2xl font-bold mb-4 text-gray-900">{shame.title || content?.title || 'Untitled'}</h1>
-        
-        <div className="mb-4 text-sm text-gray-600">
-          <span>{shame.upvoteCount} points</span>
-          <span className="mx-2">|</span>
-          <span>{formatDate(shame.timestamp)}</span>
-        </div>
+     <div className="max-w-4xl mx-auto px-4 py-8">
+       <div className="flex items-start gap-6">
+         <div className="flex flex-col items-center gap-2">
+           <button
+             onClick={handleUpvote}
+             disabled={!account || upvoting}
+             className={`flex items-center justify-center h-14 w-14 rounded-full border transition-colors ${
+               account
+                 ? 'bg-red-800 hover:bg-red-900 text-white border-red-800'
+                 : 'bg-gray-100 text-gray-400 border-gray-300 cursor-not-allowed'
+             }`}
+             title={account ? 'Upvote' : 'Connect wallet to upvote'}
+           >
+             <ArrowUp className="w-6 h-6" />
+           </button>
+           <div className="text-xs text-gray-500 text-center w-16">{shame.upvoteCount} points</div>
+         </div>
+ 
+        <div className="flex-1 space-y-6">
+          <div className="bg-white p-6 border border-gray-300">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              {shame.title || content?.title || 'Untitled'}
+            </h1>
+            <div className="text-xs text-gray-500 text-right mb-8">{formatDate(shame.timestamp)}</div>
 
-        <div className="mb-6 text-gray-700 whitespace-pre-wrap">{content?.content}</div>
+            <div className="mb-6 text-gray-700 whitespace-pre-wrap">{content?.content}</div>
 
-        {content?.images && content.images.length > 0 && (
-          <div
-            className={`mb-6 grid gap-4 ${
-              content.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
-            }`}
-          >
-            {content.images.map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt={`Shame image ${idx + 1}`}
-                className="w-full border border-gray-300 object-cover cursor-pointer"
-                onClick={() => setSelectedImage(img)}
-              />
-            ))}
+            {content?.images && content.images.length > 0 && (
+              <div
+                className={`mb-6 grid gap-4 ${
+                  content.images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
+                }`}
+              >
+                {content.images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`Shame image ${idx + 1}`}
+                    className="w-full border border-gray-300 object-cover cursor-pointer"
+                    onClick={() => setSelectedImage(img)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        )}
 
-        <div className="pt-4 border-t border-gray-300">
-          <button
-            onClick={handleUpvote}
-            disabled={!account || upvoting}
-            className={`px-3 py-1 text-sm border ${
-              account
-                ? 'bg-red-800 hover:bg-red-900 text-white border-red-800'
-                : 'bg-gray-100 text-gray-500 cursor-not-allowed border-gray-300'
-            }`}
-          >
-            <ArrowUp className="w-4 h-4 inline mr-1" />
-            {upvoting ? 'Upvoting...' : 'Upvote'}
-          </button>
+          <div className="space-y-4">
+            <div className="bg-white p-4 border border-gray-300 text-sm space-y-3">
+              <div>
+                <div className="text-gray-500 uppercase tracking-wide text-xs mb-1">• View Shame object on SuiVision</div>
+                <a
+                  className="text-red-800 hover:text-red-900 underline block truncate"
+                  href={`https://testnet.suivision.xyz/object/${shame.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={`https://testnet.suivision.xyz/object/${shame.id}`}
+                >
+                  {`https://testnet.suivision.xyz/object/${shame.id}`}
+                </a>
+              </div>
+              <div>
+                <div className="text-gray-500 uppercase tracking-wide text-xs mb-1">• View Blob on Walrus Explorer</div>
+                <a
+                  className="text-red-800 hover:text-red-900 underline block truncate"
+                  href={`https://walruscan.com/testnet/blob/${shame.blobId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={`https://walruscan.com/testnet/blob/${shame.blobId}`}
+                >
+                  {`https://walruscan.com/testnet/blob/${shame.blobId}`}
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
       {selectedImage && (
         <div
           className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"

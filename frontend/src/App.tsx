@@ -164,14 +164,21 @@ function HomePage() {
 
 function AppRoutes() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white flex flex-col">
       <NavBar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/shame/:id" element={<ShameDetail />} />
-        <Route path="/new" element={<PublishPage />} />
-        <Route path="/about" element={<About />} />
-      </Routes>
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/shame/:id" element={<ShameDetail />} />
+          <Route path="/new" element={<PublishPage />} />
+          <Route path="/about" element={<About />} />
+        </Routes>
+      </main>
+      <footer className="bg-gray-50 border-t border-gray-200 py-4">
+        <div className="max-w-4xl mx-auto px-4 text-center text-xs text-gray-500">
+          Powered by Sui blockchain and Walrus decentralized storage infrastructure.
+        </div>
+      </footer>
     </div>
   );
 }
