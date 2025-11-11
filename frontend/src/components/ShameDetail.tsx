@@ -3,8 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ArrowUp } from 'lucide-react';
 import { Shame, ShameContent } from '../types';
 import { fetchShameById, createUpvoteTransaction } from '../utils/suiClient';
-//import { appendExtendWalrusBlob, fetchFromWalrus, getWalrusClient } from '../utils/walrus';
-import { fetchFromWalrus } from '../utils/walrus';
+import { fetchFromWalrus, getWalrusClient } from '../utils/walrus';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
 
 export function ShameDetail() {
@@ -24,11 +23,13 @@ export function ShameDetail() {
     }
   }, [id]);
 
-  async function loadShame() {
+  async function loadShame(withSpinner: boolean = true) {
     if (!id) return;
 
     try {
-      setLoading(true);
+      if (withSpinner) {
+        setLoading(true);
+      }
       setError(null);
 
       const shameData = await fetchShameById(id);
@@ -46,28 +47,42 @@ export function ShameDetail() {
       console.error('Failed to load shame:', err);
       setError('Failed to load shame');
     } finally {
-      setLoading(false);
+      if (withSpinner) {
+        setLoading(false);
+      }
     }
   }
 
   async function handleUpvote() {
     if (!account || upvoting || !shame) return;
+    if (!shame.sharedBlobId) {
+      alert('Unable to upvote: missing shared blob reference.');
+      return;
+    }
 
     try {
       setUpvoting(true);
 
-      const tx = createUpvoteTransaction(shame.id, account.address);
-      //const walrusClient = getWalrusClient();
+      const EXTENDED_EPOCHS_PER_UPVOTE = 1;
+      const walrusClient = getWalrusClient();
+      const tx = await createUpvoteTransaction(
+        shame.id,
+        shame.sharedBlobId,
+        EXTENDED_EPOCHS_PER_UPVOTE,
+        account.address,
+      );
 
-      //tx.setGasBudgetIfNotSet(50_000_000n); // 50M MIST = 0.05 SUI
-      //await appendExtendWalrusBlob(tx, shame.blobObjectId, 1);
-
-      // Prepare transaction with client before walrus extension (needed for coin balance resolution)
-      // The walrus extension resolves coin balances during its call, so client must be available
-      //await tx.prepareForSerialization({ client: walrusClient });
-
+      await tx.prepareForSerialization({ client: walrusClient });
       await signAndExecute({ transaction: tx as any });
-      await loadShame();
+      setShame((prev) =>
+        prev
+          ? {
+              ...prev,
+              upvoteCount: prev.upvoteCount + 1,
+            }
+          : prev,
+      );
+      await loadShame(false);
     } catch (error) {
       console.error('Upvote failed:', error);
       alert('Failed to upvote: ' + (error as Error).message);

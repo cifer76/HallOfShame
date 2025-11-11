@@ -8,7 +8,7 @@ export interface Shame {
   id: string;
   title: string;
   blobId: string;
-  blobObjectId: string; // Sui object ID of the Walrus blob
+  sharedBlobId: string; // Sui object ID of the shared wrapper around the Walrus blob
   author: string;
   timestamp: number;
   upvoteCount: number;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Upload, Send, X } from 'lucide-react';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
-import { createWalrusBlobFlow, imageToBase64 } from '../utils/walrus';
+import { createWalrusBlobFlow, imageToBase64, WAL_TYPE } from '../utils/walrus';
 import { appendPublishShame } from '../utils/suiClient';
 import { ShameContent } from '../types';
 
@@ -51,9 +51,20 @@ export function PublishPage() {
         images: images.length > 0 ? images : undefined,
       };
 
-      const { flow, epochs, walrusClient } = createWalrusBlobFlow(shameContent);
+      const { flow, epochs, walrusClient, encoded } = createWalrusBlobFlow(shameContent);
 
       await flow.encode();
+
+      const encodedBytes = encoded.length;
+      const { storageCost, writeCost, totalCost } = await walrusClient.walrus.storageCost(encodedBytes, epochs);
+      console.info('[Walrus] Publish requirements', {
+        encodedBytes,
+        epochs,
+        storageCost: storageCost.toString(),
+        writeCost: writeCost.toString(),
+        totalCost: totalCost.toString(),
+        walType: WAL_TYPE,
+      });
 
       setUploadProgress('Registering blob (signature 1 of 2)...');
       const registerTx = flow.register({
@@ -220,4 +231,3 @@ export function PublishPage() {
     </div>
   );
 }
-

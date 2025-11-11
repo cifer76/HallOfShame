@@ -18,6 +18,11 @@ export const WALRUS_STORAGE_EPOCHS =
     ? Math.min(REQUESTED_STORAGE_EPOCHS, WALRUS_MAX_STORAGE_EPOCHS)
     : WALRUS_MAX_STORAGE_EPOCHS;
 
+export const WAL_PACKAGE_ID =
+  import.meta.env.VITE_WAL_PACKAGE_ID ||
+  '0x8270feb7375eee355e64fdb69c50abb6b5f9393a722883c1cf45f8e26048810a';
+export const WAL_TYPE = `${WAL_PACKAGE_ID}::wal::WAL`;
+
 const SUI_NETWORK = (import.meta.env.VITE_SUI_NETWORK || 'testnet') as 'testnet' | 'mainnet';
 const SUI_RPC_URL = import.meta.env.VITE_SUI_RPC_URL || getFullnodeUrl(SUI_NETWORK);
 

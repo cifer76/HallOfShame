@@ -1,6 +1,7 @@
 import { SuiClient, SuiObjectResponse } from '@mysten/sui/client';
-import { Transaction } from '@mysten/sui/transactions';
+import { Transaction, coinWithBalance } from '@mysten/sui/transactions';
 import { Shame } from '../types';
+import { getWalrusClient, WAL_TYPE } from './walrus';
 
 const SUI_NETWORK = import.meta.env.VITE_SUI_NETWORK || 'testnet';
 const SUI_RPC_URL = import.meta.env.VITE_SUI_RPC_URL || 'https://fullnode.testnet.sui.io:443';
@@ -42,22 +43,83 @@ export function createPublishTransaction(
   return appendPublishShame(tx, title, blobId, blobObjectId, sender);
 }
 
-/**
- * Create transaction to upvote a shame (no payment required)
- */
-export function createUpvoteTransaction(
+const WALRUS_SYSTEM_ID = '0x6c2547cbbc38025cf3adac45f63cb0a8d12ecf777cdc75a4971612bf97fdf6af';
+
+interface SharedBlobFields {
+  id: { id: string };
+  blob: {
+    fields: {
+      id: { id: string };
+      storage: {
+        fields: {
+          storage_size: string;
+        };
+      };
+    };
+  };
+}
+
+function extractSharedBlobFields(object: SuiObjectResponse): SharedBlobFields {
+  if (!object.data?.content || object.data.content.dataType !== 'moveObject') {
+    throw new Error('Shared blob object has no Move content');
+  }
+
+  return object.data.content.fields as unknown as SharedBlobFields;
+}
+
+export async function createUpvoteTransaction(
   shameId: string,
+  sharedBlobId: string,
+  extendedEpochs: number,
   sender: string,
-): Transaction {
+): Promise<Transaction> {
   const tx = new Transaction();
   tx.setSenderIfNotSet(sender);
-  
+  //tx.setGasBudget(150_000_000n);
+
+  const sharedBlobObject = await suiClient.getObject({
+    id: sharedBlobId,
+    options: {
+      showContent: true,
+    },
+  });
+
+  const sharedBlobFields = extractSharedBlobFields(sharedBlobObject);
+  const blobStorageSize = Number(sharedBlobFields.blob.fields.storage.fields.storage_size);
+
+  const walrusClient = getWalrusClient();
+  const { storageCost, writeCost, totalCost } = await walrusClient.walrus.storageCost(blobStorageSize, extendedEpochs);
+  const walType = WAL_TYPE;
+
+  console.info('[Walrus] Upvote extension requirements', {
+    sharedBlobId,
+    storageBytes: blobStorageSize,
+    extendedEpochs,
+    storageCost: storageCost.toString(),
+    writeCost: writeCost.toString(),
+    totalCost: totalCost.toString(),
+    walType,
+  });
+
+  const walPayment = tx.add(
+    coinWithBalance({
+      type: walType,
+      balance: storageCost,
+    }),
+  );
+
   tx.moveCall({
     target: `${PACKAGE_ID}::hall_of_shame::upvote_shame`,
     arguments: [
       tx.object(shameId),
+      tx.object(sharedBlobId),
+      tx.object(WALRUS_SYSTEM_ID),
+      walPayment,
+      tx.pure.u32(extendedEpochs),
     ],
   });
+
+  tx.transferObjects([walPayment], tx.pure.address(sender));
 
   return tx;
 }
@@ -82,18 +144,13 @@ export function parseShame(obj: SuiObjectResponse): Shame | null {
   }
   
   const blobId = bytesToString(fields.blob_id);
-  const blobObjectId =
-    typeof fields.blob_object_id === 'string'
-      ? fields.blob_object_id
-      : fields.blob_object_id
-      ? bytesToString(fields.blob_object_id)
-      : '';
+  const sharedBlobId = typeof fields.shared_blob_id === 'string' ? fields.shared_blob_id : '';
 
   return {
     id: obj.data.objectId,
     title,
     blobId,
-    blobObjectId,
+    sharedBlobId,
     author: fields.author,
     timestamp: Number(fields.timestamp),
     upvoteCount: Number(fields.upvote_count),
