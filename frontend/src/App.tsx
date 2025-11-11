@@ -64,7 +64,7 @@ function HomePage() {
   };
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white min-h-full">
       <div className="max-w-4xl mx-auto px-4 py-4">
         <WalletStatus />
 
@@ -164,7 +164,7 @@ function HomePage() {
 
 function AppRoutes() {
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-[100vh] bg-white flex flex-col">
       <NavBar />
       <main className="flex-1">
         <Routes>
@@ -174,7 +174,7 @@ function AppRoutes() {
           <Route path="/about" element={<About />} />
         </Routes>
       </main>
-      <footer className="bg-gray-50 border-t border-gray-200 py-4">
+      <footer className="py-6">
         <div className="max-w-4xl mx-auto px-4 text-center text-xs text-gray-500">
           Powered by Sui blockchain and Walrus decentralized storage infrastructure.
         </div>

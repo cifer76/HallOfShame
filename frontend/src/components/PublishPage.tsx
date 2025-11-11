@@ -151,7 +151,7 @@ export function PublishPage() {
               onChange={(e) => setContent(e.target.value)}
               placeholder="Share your shame..."
               rows={12}
-              className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-green-700 resize-none"
+              className="w-full px-3 py-2 border border-gray-300 focus:outline-none focus:border-green-700 resize-y"
               disabled={publishing}
             />
           </div>
