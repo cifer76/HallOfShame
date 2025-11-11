@@ -5,6 +5,7 @@ import { Shame, ShameContent } from '../types';
 import { fetchShameById, createUpvoteTransaction } from '../utils/suiClient';
 import { fetchFromWalrus, getWalrusClient } from '../utils/walrus';
 import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-kit';
+import { Toast } from './Toast';
 
 export function ShameDetail() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +17,7 @@ export function ShameDetail() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const account = useCurrentAccount();
   const { mutateAsync: signAndExecute } = useSignAndExecuteTransaction();
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -56,7 +58,7 @@ export function ShameDetail() {
   async function handleUpvote() {
     if (!account || upvoting || !shame) return;
     if (!shame.sharedBlobId) {
-      alert('Unable to upvote: missing shared blob reference.');
+      setToast({ message: 'Missing shared blob reference for this shame.', type: 'error' });
       return;
     }
 
@@ -83,9 +85,13 @@ export function ShameDetail() {
           : prev,
       );
       await loadShame(false);
+      setToast({ message: 'Thanks! Your upvote extended this shame.', type: 'success' });
     } catch (error) {
       console.error('Upvote failed:', error);
-      alert('Failed to upvote: ' + (error as Error).message);
+      setToast({
+        message: `Failed to upvote: ${(error as Error).message}`,
+        type: 'error',
+      });
     } finally {
       setUpvoting(false);
     }
@@ -125,6 +131,7 @@ export function ShameDetail() {
 
   return (
      <div className="max-w-4xl mx-auto px-4 py-8">
+       {toast && <Toast message={toast.message} type={toast.type} />}
        <div className="flex items-start gap-6">
          <div className="flex flex-col items-center gap-2">
            <button

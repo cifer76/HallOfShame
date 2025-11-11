@@ -75,7 +75,7 @@ export async function createUpvoteTransaction(
 ): Promise<Transaction> {
   const tx = new Transaction();
   tx.setSenderIfNotSet(sender);
-  //tx.setGasBudget(150_000_000n);
+  tx.setGasBudget(10_000_000n);
 
   const sharedBlobObject = await suiClient.getObject({
     id: sharedBlobId,
@@ -146,16 +146,16 @@ export function parseShame(obj: SuiObjectResponse): Shame | null {
   const blobId = bytesToString(fields.blob_id);
   const sharedBlobId = typeof fields.shared_blob_id === 'string' ? fields.shared_blob_id : '';
  
-   return {
-     id: obj.data.objectId,
-     title,
-     blobId,
-     sharedBlobId,
-     author: fields.author,
-     timestamp: Number(fields.timestamp),
-     upvoteCount: Number(fields.upvote_count),
-   };
- }
+  return {
+    id: obj.data.objectId,
+    title,
+    blobId,
+    sharedBlobId,
+    author: fields.author,
+    timestamp: Number(fields.timestamp),
+    upvoteCount: Number(fields.upvote_count),
+  };
+}
 
 /**
  * Fetch all shames

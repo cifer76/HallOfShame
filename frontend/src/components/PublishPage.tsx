@@ -5,6 +5,7 @@ import { useCurrentAccount, useSignAndExecuteTransaction } from '@mysten/dapp-ki
 import { createWalrusBlobFlow, imageToBase64, WAL_TYPE } from '../utils/walrus';
 import { appendPublishShame } from '../utils/suiClient';
 import { ShameContent } from '../types';
+import { Toast } from './Toast';
 
 export function PublishPage() {
   const [title, setTitle] = useState('');
@@ -12,6 +13,7 @@ export function PublishPage() {
   const [images, setImages] = useState<string[]>([]);
   const [publishing, setPublishing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState('');
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   
   const account = useCurrentAccount();
   const navigate = useNavigate();
@@ -101,11 +103,14 @@ export function PublishPage() {
       });
 
       setUploadProgress('');
-      alert('Shame published successfully!');
+      setToast({ message: 'Shame published successfully!', type: 'success' });
       navigate('/');
     } catch (error) {
       console.error('Error publishing shame:', error);
-      alert('Failed to publish: ' + (error as Error).message);
+      setToast({
+        message: `Failed to publish: ${(error as Error).message}`,
+        type: 'error',
+      });
       setUploadProgress('');
     } finally {
       setPublishing(false);
@@ -114,6 +119,7 @@ export function PublishPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {toast && <Toast message={toast.message} type={toast.type} />}
       <div className="mb-4">
         <button
           onClick={() => navigate('/')}
