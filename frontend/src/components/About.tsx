@@ -37,6 +37,28 @@ export function About() {
             1. Hall of Shame currently operates on Sui testnet, where one epoch is approximately one day.
           </p>
         </div>
+
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">Shames' Lifetime</h2>
+          <div className="space-y-4 text-gray-700">
+            <p>
+              Walrus is not designed to be a permanent storage inherently, it could remove the content that has not incentivized to persist. So there needs some intervention to extend the content's existence on the network.
+            </p>
+            <p>
+              Though this design might introduce extra complexity for developers, it perfectly fits the scenario of Hall Of Shame. We want genuine shames to be exposed and recorded permanently, we are afraid of persisting false accusation for good projects, companies or people by any chance.
+              The pruning mechanism provides a way to naturally remove these negative traces when content lacks community support.
+            </p>
+
+            <p>
+              Every newly posted shame will get a initial 7 epochs lifespan on Walrus, before it's expired and removed from the network, user can upvote the shame to extend its lifespan, each upvote extends the lifespan of the content by 1 epoch.
+              This creates a community-driven curation system where the community decides what content deserves to persist: if a posted shame is accurate and relevant, people will continue to upvote it, keeping it visible for longer. If it's false or unfair, few people will upvote it, allowing it to be naturally removed over time.
+            </p>
+
+            <p>
+              We acknowledge this is a preliminary, naive mechanism. While it roughly works as an initial framework, creating a truly just and fair platform requires significantly more work. We will keep improving this system.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
