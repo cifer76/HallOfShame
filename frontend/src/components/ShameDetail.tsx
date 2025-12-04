@@ -36,7 +36,7 @@ export function ShameDetail() {
 
       const shameData = await fetchShameById(id);
       if (!shameData) {
-        setError('Shame not found');
+        setError('This shame has been pruned from Walrus due to lack of upvotes. When shames don\'t receive enough upvotes, their expiration time isn\'t extended and they\'re automatically removed. This typically means few people found it noteworthy or the content may have been inaccurate.');
         return;
       }
 
@@ -47,7 +47,7 @@ export function ShameDetail() {
       setContent(contentData);
     } catch (err) {
       console.error('Failed to load shame:', err);
-      setError('Failed to load shame');
+      setError('This shame has been pruned from Walrus due to lack of upvotes. When shames don\'t receive enough upvotes, their expiration time isn\'t extended and they\'re automatically removed. This typically means few people found it noteworthy or the content may have been inaccurate.');
     } finally {
       if (withSpinner) {
         setLoading(false);
@@ -123,7 +123,10 @@ export function ShameDetail() {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="bg-white p-6 border border-gray-300">
-          <p className="text-gray-700">{error || 'Shame not found'}</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-3">Shame No Longer Available</h2>
+          <p className="text-gray-700 leading-relaxed">
+            {error || 'This shame has been pruned from Walrus due to lack of upvotes. When shames don\'t receive enough upvotes, their expiration time isn\'t extended and they\'re automatically removed. This typically means few people found it noteworthy or the content may have been inaccurate.'}
+          </p>
         </div>
       </div>
     );
