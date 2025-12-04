@@ -136,6 +136,7 @@ export function ShameDetail() {
      <div className="max-w-4xl mx-auto px-4 py-8">
        {toast && <Toast message={toast.message} type={toast.type} />}
        <div className="flex items-start gap-6">
+
          <div className="flex flex-col items-center gap-2">
            <button
              onClick={handleUpvote}
